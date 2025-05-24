@@ -1,0 +1,52 @@
+version: "3.8"
+
+services:
+  db:
+    build:
+      context: .
+      dockerfile: Dockerfile_sqlserver
+    image: ${DB_IMAGE_NAME}
+    container_name:  ${DB_CONTAINER_NAME}
+    environment:
+      SA_PASSWORD: ${SA_PASSWORD}
+      MSSQL_SA_PASSWORD: ${MSSQL_SA_PASSWORD}
+      MSSQL_AUTHENTICATION_MODE: ${MSSQL_AUTHENTICATION_MODE}
+      ACCEPT_EULA: ${ACCEPT_EULA}
+      MSSQL_DATA_DIR: /var/opt/mssql/data
+      MSSQL_LOG_DIR: /var/opt/mssql/log
+      MSSQL_SECRETS_DIR: /var/opt/mssql/secrets
+      MSSQL_TCP_PORT: ${MSSQL_TCP_PORT}
+      MSSQL_COLLATION: ${MSSQL_COLLATION}
+     ports:
+      - "${DB_PORT}:${DB_PORT}"
+    networks:
+      - ${NETWORK_NAME}
+    volumes:
+      - ./mssql/log:/var/opt/mssql/log:z
+      - ./mssql/secrets:/var/opt/mssql/secrets:z
+      - ./mssql/templatedata:/var/opt/mssql/data:z
+      - ./init.sql:/init.sql
+
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - db
+    command: /bin/bash -c "wait-for-it ${WAIT_HOST}:${WAIT_PORT} -- dotnet your-app.dll"
+    ports:
+      - "${WEB_PORT}:${WEB_PORT}"
+    volumes:
+      - .:/src
+      - /mnt/c/logs:/var/log
+    environment:
+      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
+      - ASPNETCORE_URLS=${ASPNETCORE_URLS}
+      - ConnectionStrings__DefaultConnection=${DB_CONNECTION_STRING}
+      - ASPNETCORE_URLS=http://localhost:8081
+    networks:
+      - ${NETWORK_NAME}
+
+networks:
+  ${NETWORK_NAME}
+   driver: bridge
