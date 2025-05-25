@@ -1,2 +1,6 @@
 obj
+<<<<<<< HEAD
+=======
+bin
+>>>>>>> gitignore
 .vs
