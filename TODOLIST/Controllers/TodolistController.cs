@@ -45,7 +45,7 @@ namespace TODOLIST.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetByTodolistId")]
+        [HttpGet(":id")]
         public async Task<ActionResult<List<Todolist>?>> GetTodolistByTodolistId([FromQuery] int todolistId)
         {
             try
@@ -100,7 +100,7 @@ namespace TODOLIST.Controllers
         }
 
         [Authorize]
-        [HttpPut]
+        [HttpPut(":id")]
         public async Task<IActionResult> UpdateTodolist([FromBody] List<Todolist> todolists)
         {
             try
@@ -131,7 +131,7 @@ namespace TODOLIST.Controllers
         }
 
         [Authorize]
-        [HttpDelete]
+        [HttpDelete(":id")]
         public async Task<IActionResult> DeleteTodolist([FromBody] List<TodolistDeletedDto> TodolistsDeletedDto)
         {
             try
