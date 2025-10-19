@@ -16,3 +16,6 @@
 |Todoデータの削除| DELETE | /apo/Todolist/:id| 
 
 
+### 目的: チーム開発で同一環境を再現するためのDocker構成
+
+### 起動方法: `docker compose up -d`
