@@ -9,8 +9,8 @@
 
   |             | メソッド      | URI           | 
 | --- | --- | --- |     
-|Todoデータを全取得   |  GET     | /apo/Todolist | 
-|Todoデータのidに紐づくTodoデータを取得  |  GET    | /apo/Todolist/:id | 
+|Todoデータを全取得   |  GET     | /api/Todolist | 
+|Todoデータのidに紐づくTodoデータを取得  |  GET    | /api/Todolist/:id | 
 |Todoデータの新規作成 |  POST | /api/Todolist| 
 |Todoデータの更新 |  PUT | /api/Todolist/:id| 
 |Todoデータの削除| DELETE | /api/Todolist/:id| 
