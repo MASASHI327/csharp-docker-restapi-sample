@@ -11,9 +11,9 @@
 | --- | --- | --- |     
 |Todoデータを全取得   |  GET     | /apo/Todolist | 
 |Todoデータのidに紐づくTodoデータを取得  |  GET    | /apo/Todolist/:id | 
-|Todoデータの新規作成 |  POST | /apo/Todolist| 
-|Todoデータの更新 |  PUT | /apo/Todolist/:id| 
-|Todoデータの削除| DELETE | /apo/Todolist/:id| 
+|Todoデータの新規作成 |  POST | /api/Todolist| 
+|Todoデータの更新 |  PUT | /api/Todolist/:id| 
+|Todoデータの削除| DELETE | /api/Todolist/:id| 
 
 
 ### 目的: チーム開発で同一環境を再現するためのDocker構成
