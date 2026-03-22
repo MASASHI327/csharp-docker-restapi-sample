@@ -8,156 +8,120 @@ using TODOLIST.Util;
 
 namespace TODOLIST.Controllers
 {
+    [Authorize]
     [ApiController]
-    [Route("api/[controller]")]
-    public class TodolistController : ControllerBase
+    [Route("api")]
+    public class TodoListController : ControllerBase
     {
-        private readonly TodolistService _todolistService;
+        private readonly TodolistService _todoListService;
 
-        public TodolistController(TodolistService todolistService)
+        public TodoListController(TodolistService todolistService)
         {
-            _todolistService = todolistService;
+            _todoListService = todolistService;
         }
 
-        [Authorize]
-        [HttpGet]
-        public async Task<ActionResult<List<Todolist>?>> GetTodolistsByUserIdAsync()
+        [HttpGet("todolist")]
+        public async Task<ActionResult<List<TodoDto>>> GetTodoListByUserIdAsync()
         {
             try
             {
-                //認証されたユーザーIDを取得
-                int? userId = User?.GetUserId();
-                if (userId == null)
-                {
-                    return Unauthorized();
-                }
-                List<Todolist>? todolist = await _todolistService.GetTodolistsByUserIdAsync(userId.Value);
-                return Ok(todolist);
+               int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+               List<TodoDto> todolistDto = await _todoListService.GetTodoListByUserIdAsync(userId);
+               return Ok(todolistDto);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
+                 var errorData = new
                 {
-                    message = "サーバーエラーが発生しました。",
-                    error = ex.Message, ex.StackTrace
-                });
-            }
-        }
-
-        [Authorize]
-        [HttpGet(":id")]
-        public async Task<ActionResult<List<Todolist>?>> GetTodolistByTodolistId([FromQuery] int todolistId)
-        {
-            try
-            {
-                //認証されたユーザーIDを取得
-                int? userId = User?.GetUserId();
-                if (userId == null)
-                {
-                    return Unauthorized();
-                }
-                List<Todolist>? todolist = await _todolistService.GetTodolistByTodolistIdAsync(todolistId, userId.Value);
-                return Ok(todolist);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    message = "サーバーエラーが発生しました。",
-                    error = ex.Message, ex.StackTrace
-                });
-            }
-        }
-
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> CreateTodolist([FromBody] List<TodolistCreatedDto> todolistsCretedDto)
-        {
-            try
-            {
-                //認証されたユーザーIDを取得
-                int? userId = User?.GetUserId();
-                if (userId == null)
-                {
-                    return Unauthorized();
-                }
-                todolistsCretedDto = ValidateHelper.SetUserId(todolistsCretedDto, userId.Value);
-                bool result = await _todolistService.CreateTodolistsAsync(todolistsCretedDto);
-                if (result == true)
-                {
-                    return Ok(todolistsCretedDto);
-                }
-                return BadRequest(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    message = "サーバーエラーが発生しました。",
-                    error = ex.Message, ex.StackTrace
-                });
-            }
-        }
-
-        [Authorize]
-        [HttpPut(":id")]
-        public async Task<IActionResult> UpdateTodolist([FromBody] List<Todolist> todolists)
-        {
-            try
-            {
-                //認証されたユーザーIDを取得
-                int? userId = User?.GetUserId();
-                if (userId == null)
-                {
-                    return Unauthorized();
-                }
-                todolists = ValidateHelper.SetUserId(todolists, userId.Value);
-                bool result = await _todolistService.UpdateTodolistsAsync(todolists);
-                if (result == true)
-                {
-                    return Ok(todolists);
-                }
-                return BadRequest(result);
-            }
-            catch (Exception ex)
-            {
-                return StatusCode(500, new
-                {
-                    message = "サーバーエラーが発生しました。",
+                    message = "サーバー内部でエラーが発生しました。",
                     error = ex.Message,
-                    ex.StackTrace
-                });
+                    statusCode = "500"
+                };
+                return StatusCode(500, errorData);
             }
         }
 
-        [Authorize]
-        [HttpDelete(":id")]
-        public async Task<IActionResult> DeleteTodolist([FromBody] List<TodolistDeletedDto> TodolistsDeletedDto)
+        [HttpGet("todo/{todoId}")]
+        public async Task<ActionResult<TodoDto>> GetTodoByTodoId(int todoId)
         {
             try
             {
-                //認証されたユーザーIDを取得
-                int? userId = User?.GetUserId();
-                if (userId == null)
-                {
-                    return Unauthorized();
-                }
-                TodolistsDeletedDto = ValidateHelper.SetUserId(TodolistsDeletedDto, userId.Value);
-                bool result = await _todolistService.DeleteTodolistsAsync(TodolistsDeletedDto);
-                if (result == true)
-                {
-                    return Ok(TodolistsDeletedDto);
-                }
-                return BadRequest(result);
+                int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                TodoDto todoDto = await _todoListService.GetTodoByTodoIdAndUserIdAsync(userId, todoId);
+                return Ok(todoDto);
             }
             catch (Exception ex)
             {
-                return StatusCode(500, new
+                var errorData = new
                 {
-                    message = "サーバーエラーが発生しました。",
+                    message = "サーバー内部でエラーが発生しました。",
                     error = ex.Message,
-                    ex.StackTrace
-                });
+                    statusCode = "500"
+                };
+                return StatusCode(500, errorData);
+            }
+        }
+
+        [HttpPost("todo")]
+        public async Task<IActionResult> CreateTodo([FromBody] TodoDto todoDto)
+        {
+            try
+            {
+                int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                await _todoListService.CreateTodoAsync(userId, todoDto);
+                return Ok(todoDto);
+            }
+            catch (Exception ex)
+            {
+                var errorData = new
+                {
+                    message = "サーバー内部でエラーが発生しました。",
+                    error = ex.Message,
+                    statusCode = "500"
+                };
+                return StatusCode(500, errorData);
+            }
+        }
+
+        [HttpPatch("todo/{todolistId}")]
+        public async Task<ActionResult<TodoDto>> UpdateTodo([FromBody] TodoDto todoDto)
+        {
+            try
+            {
+                int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                await _todoListService.UpdateTodoAsync(userId, todoDto);
+                return Ok(todoDto);
+            }
+            catch (Exception ex)
+            {
+                var errorData = new
+                {
+                    message = "サーバー内部でエラーが発生しました。",
+                    error = ex.Message,
+                    statusCode = "500"
+                };
+                return StatusCode(500, errorData);
+            }
+        }
+
+        [HttpDelete("todo/{todolistId}")]
+        public async Task<IActionResult> DeleteTodo(int todolistId)
+        {
+            try
+            {
+                int userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? "0");
+                await _todoListService.DeleteTodoAsync(userId, todolistId);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                var errorData = new
+                {
+                    message = "サーバー内部でエラーが発生しました。",
+                    error = ex.Message,
+                    statusCode = "500"
+                };
+                return StatusCode(500, errorData);
             }
         }
 
