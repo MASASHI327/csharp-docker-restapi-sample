@@ -11,8 +11,8 @@ namespace TODOLIST
     /// </summary>
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        public DbSet<User> Users { get; set; }
-        public DbSet<Todolist> Todolists { get; set; }
+        public DbSet<UserEntity> Users { get; set; }
+        public DbSet<TodoEntity> Todolists { get; set; }
 
         protected override void OnConfiguring(DbContextOptionsBuilder options)
         {
@@ -40,31 +40,30 @@ namespace TODOLIST
         {
             base.OnModelCreating(modelBuilder);  // 必要に応じてベースクラスの OnModelCreating を呼び出す
 
-            modelBuilder.Entity<User>().ToTable("Users");
+            modelBuilder.Entity<UserEntity>().ToTable("Users");
 
-            modelBuilder.Entity<User>().HasData(
-            new User { USER_ID = 1, USER_NAME = "Taro", EMAIL_ADDRESS = "Taro@gmail.com", PASSWORD = "rewkwekwe" },
-            new User { USER_ID = 2, USER_NAME = "Jiro", EMAIL_ADDRESS = "Jiro@gmail.com", PASSWORD = "erkewjwek" }
+            modelBuilder.Entity<UserEntity>().HasData(
+            new UserEntity { USER_ID = 1, USER_NAME = "Taro", EMAIL_ADDRESS = "Taro@gmail.com", PASSWORD = "rewkwekwe" },
+            new UserEntity { USER_ID = 2, USER_NAME = "Jiro", EMAIL_ADDRESS = "Jiro@gmail.com", PASSWORD = "erkewjwek" }
             );
 
-            modelBuilder.Entity<Todolist>(entity =>
+            modelBuilder.Entity<TodoEntity>(entity =>
             {
                 // 自動生成されるように設定
-                entity.Property(t => t.TODOLIST_ID)
+                entity.Property(t => t.TODO_ID)
                       .ValueGeneratedOnAdd();
+
             });
 
 
-            modelBuilder.Entity<Todolist>().HasData(
-             new Todolist { TODOLIST_ID = 1,
-                            USER_ID = 1,
+            modelBuilder.Entity<TodoEntity>().HasData(
+             new TodoEntity { TODO_ID = 1,
                             TITLE = "GETについて",
                             CONTENT = "内容1",
                             CREATED_DATE = new DateTime(2022,4,11),
                             UPDATED_DATE = new DateTime(2022,5,5)
              },
-             new Todolist { TODOLIST_ID = 2,
-                            USER_ID = 2,
+             new TodoEntity { TODO_ID = 2,
                             TITLE = "PUTについて",
                             CONTENT = "内容2",
                             CREATED_DATE = new DateTime(2022,2,1),

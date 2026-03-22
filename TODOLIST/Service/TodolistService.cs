@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Polly;
+using System.Security.Claims;
 using TODOLIST.Domain;
 using TODOLIST.DTO;
 using TODOLIST.Repository;
@@ -16,45 +17,68 @@ namespace TODOLIST.Service
             _repository = repository;
         }
 
-        public async Task<List<Todolist>?> GetTodolistsByUserIdAsync(int userId)
+        public async Task<List<TodoDto>> GetTodoListByUserIdAsync(int userId)
         {
-            List<Todolist>? todolist = await _repository.GetTodolistsByUserIdAsync(userId);
-            return todolist;
-        }
-
-        public async Task<List<Todolist>?> GetTodolistByTodolistIdAsync(int todolistId, int userId)
-        {
-            List<Todolist>? todolist = await _repository.GetTodolistByTodolistIdAndUserIdAsync(todolistId, userId);
-            return todolist;
-        }
-
-        public async Task<bool> CreateTodolistsAsync(List<TodolistCreatedDto> todolistsCreatedDto)
-        {
-            bool result = false;
-            if (todolistsCreatedDto.Count > 0)
+            List<TodoEntity> todoEntity = await _repository.GetTodoListByUserIdAsync(userId);
+            List<TodoDto> todoListDto = todoEntity.Select(todoEntity => new TodoDto
             {
-                List<Todolist> addTodolists = todolistsCreatedDto.Select(dto => new Todolist
-                {
-                    USER_ID = dto.USER_ID,
-                    TITLE = dto.TITLE,
-                    CONTENT = dto.CONTENT,
-                    CREATED_DATE = DateTime.Now
-                }).ToList();
-                result = await _repository.AddTodlistsAsync(addTodolists);
+                TODO_ID = todoEntity.TODO_ID,
+                TITLE = todoEntity.TITLE ?? "",
+                CONTENT = todoEntity.CONTENT ?? "",
+                CODE = 200
+            }).ToList();
+            return todoListDto;
+        }
+
+        public async Task<TodoDto> GetTodoByTodoIdAndUserIdAsync(int userId, int todoId)
+        {
+            TodoEntity? todoEntity = await _repository.GetTodoByTodoIdAndUserIdAsync(userId, todoId);
+            var todoDto = new TodoDto
+            {
+                TODO_ID = todoEntity?.TODO_ID ?? 0,
+                TITLE = todoEntity?.TITLE ?? "",
+                CONTENT = todoEntity?.CONTENT ?? "",
+                CODE = 200
+            };
+            return todoDto;
+        }
+
+        public async Task CreateTodoAsync(int userId, TodoDto todoDto)
+        {
+            bool result = false;
+            TodoEntity newTodo = new TodoEntity();
+            newTodo.USER_ID = userId;
+            newTodo.TITLE = todoDto.TITLE;
+            newTodo.CONTENT = todoDto.CONTENT;
+            newTodo.CREATED_DATE = DateTime.Now;
+            result = await _repository.AddTodoAsync(newTodo);
+            if (result == false)
+            {
+                throw new Exception("レコードが保存できない");
             }
-            return result;
         }
 
-        public async Task<bool> UpdateTodolistsAsync(List<Todolist> todolists)
+        public async Task UpdateTodoAsync(int userId,TodoDto todoDto)
         {
             bool result = false;
-            return result = await _repository.UpdateTodlistsAsync(todolists);
+
+            TodoEntity updateTodo = new TodoEntity();
+            updateTodo.TODO_ID = todoDto.TODO_ID;
+            updateTodo.USER_ID = userId;
+            updateTodo.TITLE = todoDto.TITLE;
+            updateTodo.CONTENT = todoDto.CONTENT;
+            updateTodo.CREATED_DATE = DateTime.Now;
+            result = await _repository.UpdateTodoAsync(updateTodo);
+
+            if (result == false)
+            {
+                throw new Exception("レコードが保存できない");
+            }
         }
 
-        public async Task<bool> DeleteTodolistsAsync(List<TodolistDeletedDto> TodolistsDeletedDto)
+        public async Task<bool> DeleteTodoAsync(int userId, int todolistId)
         {
-            bool result = false;
-            return result = await _repository.DeleteTodolistsAsync(TodolistsDeletedDto);
+            return  await _repository.DeleteTodoAsync(userId, todolistId);
         }
     }
 }

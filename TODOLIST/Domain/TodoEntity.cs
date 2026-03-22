@@ -1,13 +1,14 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Serialization;
 
 namespace TODOLIST.Domain
 {
-    public class Todolist : IUserIdentifiable
+    public class TodoEntity 
     {
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int TODOLIST_ID { get; set; }
+        public int TODO_ID { get; set; }
         public int USER_ID { get; set; }
         public string? TITLE { get; set; } = string.Empty;
         public string? CONTENT { get; set; } = string.Empty;

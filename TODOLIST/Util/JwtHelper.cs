@@ -1,15 +1,16 @@
 ﻿using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
-using TODOLIST.DTO;
 using TODOLIST.Domain;
+
 
 namespace TODOLIST.Util
 {
     public static class JwtHelper
     {
+       
         public static int GetUserId(this ClaimsPrincipal user)
         {
             var userIdClaim = user.FindFirst(ClaimTypes.NameIdentifier);
@@ -18,8 +19,12 @@ namespace TODOLIST.Util
         }
         
 
-        public static string GenerateJwtToken(User user, string SecretKey, string issuer, string audience)
+        public static string GenerateJwtToken(UserEntity user, IConfiguration _configuration)
         {
+            string SecretKey = _configuration["JwtSettings:SecretKey"]!;
+            string issuer = _configuration["JwtSettings:Issuer"]!;
+            string audience = _configuration["JwtSettings:Audience"]!;
+
             SymmetricSecurityKey? key = new(Encoding.UTF8.GetBytes(SecretKey));
             SigningCredentials? creds = new(key, SecurityAlgorithms.HmacSha256);
 
@@ -39,5 +44,7 @@ namespace TODOLIST.Util
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
+
+
     }
 }
